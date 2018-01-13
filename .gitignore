@@ -1,0 +1,7 @@
+# VIM swap files
+*.swp
+*.swo
+
+# OS-dependent
+.DS_Store
+*~

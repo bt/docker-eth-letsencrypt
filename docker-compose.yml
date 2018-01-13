@@ -1,0 +1,51 @@
+version: '2'
+services:
+    ethnode:
+        image: parity/parity:v1.8.6
+        restart: always
+        volumes:
+            - ./ethdata:/opt/ethdata
+        ports:
+            - "127.0.0.1:8080:8080"
+            - "127.0.0.1:8180:8180"
+            - "8545:8545"
+        logging:
+            options:
+                max-file: "1"
+                max-size: "1g"
+        command: --base-path /opt/ethdata --chain mainnet --geth --ntp-servers pool.ntp.org
+
+    nginx:
+        restart: always
+        tty: true
+        image: nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./letsencrypt/etc:/etc/letsencrypt:ro
+            - ./letsencrypt/html:/tmp/letsencrypt:ro
+        links:
+            - ethnode
+        logging:
+            options:
+                max-file: "1"
+                max-size: "1g"
+        environment:
+            - LE_RENEW_HOOK=docker kill -s HUP @CONTAINER_NAME@
+
+    letsencrypt:
+        image: kvaps/letsencrypt-webroot
+        volumes:
+            - ./letsencrypt/etc:/etc/letsencrypt
+            - ./letsencrypt/html:/tmp/letsencrypt
+            - /var/run/docker.sock:/var/run/docker.sock
+        links:
+            - nginx
+        environment:
+            - DOMAINS=eth.example.com
+            - EMAIL=webmaster@example.com
+            - WEBROOT_PATH=/tmp/letsencrypt
+            - EXP_LIMIT=30
+            - CHECK_FREQ=1
