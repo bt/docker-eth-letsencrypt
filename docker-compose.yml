@@ -8,12 +8,12 @@ services:
         ports:
             - "127.0.0.1:8080:8080"
             - "127.0.0.1:8180:8180"
-            - "8545:8545"
+            - "127.0.0.1:8545:8545"
         logging:
             options:
                 max-file: "1"
                 max-size: "1g"
-        command: --base-path /opt/ethdata --chain mainnet --geth --ntp-servers pool.ntp.org
+        command: --base-path /opt/ethdata --chain mainnet --geth --jsonrpc-interface 0.0.0.0 --jsonrpc-hosts all --jsonrpc-cors "*" --ntp-servers pool.ntp.org
 
     nginx:
         restart: always
